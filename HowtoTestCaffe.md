@@ -24,7 +24,7 @@ $ ./ilsvrc12/get_ilsvrc_aux.sh
 ```
 
 ## 分類結果の可視化プログラムの作成
-`~caffe/python`内に`show_result.py`として以下のプログラムを作成。
+`~/caffe/python`内に`show_result.py`として以下のプログラムを作成。
 ```python
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
