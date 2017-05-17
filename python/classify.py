@@ -86,15 +86,39 @@ def main(argv):
         help="Image file extension to take as input when a directory " +
              "is given as the input file."
     )
+    parser.add_argument(
+         "--labels_file",
+         default=os.path.join(pycaffe_dir,
+                 "../data/ilsvrc12/synset_words.txt"),
+          help="Readable label definition file."
+    )
+    parser.add_argument(
+        "--force_grayscale",
+        action='store_true',
+        help="Converts RGB images down to single-channel grayscale versions," +
+             "useful for single-channel networks like MNIST."
+    )
+    parser.add_argument(
+          "--print_results",
+          action='store_true',
+          help="Write output text to stdout rather than serializing to a file."
+    )
     args = parser.parse_args()
 
     image_dims = [int(s) for s in args.images_dim.split(',')]
 
     mean, channel_swap = None, None
+    """
     if args.mean_file:
         mean = np.load(args.mean_file)
     if args.channel_swap:
         channel_swap = [int(s) for s in args.channel_swap.split(',')]
+    """
+    if not args.force_grayscale:
+        if args.mean_file:
+            mean = np.load(args.mean_file).mean(1).mean(1)
+        if args.channel_swap:
+            channel_swap = [int(s) for s in args.channel_swap.split(',')]
 
     if args.gpu:
         caffe.set_mode_gpu()
@@ -119,8 +143,10 @@ def main(argv):
         inputs =[caffe.io.load_image(im_f)
                  for im_f in glob.glob(args.input_file + '/*.' + args.ext)]
     else:
-        print("Loading file: %s" % args.input_file)
-        inputs = [caffe.io.load_image(args.input_file)]
+        print("Loading image file: %s" % args.input_file)
+        inputs = [caffe.io.load_image(args.input_file, not args.force_grayscale)]
+        #print("Loading file: %s" % args.input_file)
+        #inputs = [caffe.io.load_image(args.input_file)]
 
     print("Classifying %d inputs." % len(inputs))
 
