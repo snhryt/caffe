@@ -112,6 +112,7 @@ $ sudo apt install libatlas-base-dev \
      libgflags-dev \
      libgoogle-glog-dev \
      liblmdb-dev
+$ cd ~
 $ git clone https://github.com/BVLC/caffe.git
 $ cd caffe
 $ cp Makefile.config.example Makefile.config
