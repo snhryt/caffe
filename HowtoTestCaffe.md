@@ -4,18 +4,18 @@
 - http://punyo-er-met.hateblo.jp/entry/2016/03/13/214712
 
 ## ネットワーク定義ファイルのダウンロード
-Model ZOOでVGG16のページを探して、`README.md`のGist IDおよびcaffemodelのURLを確認する。
+[Model ZOO](https://github.com/BVLC/caffe/wiki/Model-Zoo)で[VGG16(?)](https://gist.github.com/ksimonyan/211839e770f7b538e2d8#file-readme-md)のページを探して、`README.md`のGist IDおよびcaffemodelのURLを確認する。
 ```bash
 $ cd ~/caffe
 $ mkdir work
 $ cd work
-$ ../scripts/download_model_from_gist.sh xxxxxxxxxx VGG16_SalObjSub # xxxxxxxxxx にはREADME.md の gist_id を入力
-$ cd VGG16_SalObjSub
-$ wget http://xxxxxxxxxxxxxxxxxxxxxxx # README.md の caffemodel_url を入力
+$ ../scripts/download_model_from_gist.sh 211839e770f7b538e2d8 . # README.md の gist_id を入力
+$ cd 211839e770f7b538e2d8
+$ wget http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/VGG_ILSVRC_16_layers.caffemodel # README.md の caffemodel_url を入力
 ```
 
 ## 画像データセットの準備
-物体認識のデータセットの1つであるCaltech101をダウンロード。加えて、シェルスクリプトから関連ファイルもダウンロード。
+物体認識のデータセットの1つである[Caltech101](http://www.vision.caltech.edu/Image_Datasets/Caltech101/)をダウンロード。加えて、シェルスクリプトから関連ファイルもダウンロード。
 ```bash
 $ cd ~/caffe/data
 $ wget http://www.vision.caltech.edu/Image_Datasets/Caltech101/101_ObjectCategories.tar.gz
@@ -44,10 +44,10 @@ for rank, (score, name) in enumerate(prediction[:top_k], start=1):
 $ cd ~/caffe
 $ ./python/classify.py \
     --raw_scale 224 \
-    --model_def ./work/VGG16_SalObjSub/deploy.prototxt \
-    --pretrained_model ./work/VGG16_SalObjSub/VGG16_SalObjSub.caffemodel \
-     --mean_file '' \
-     ./data/101_ObjectCategories/airplanes/image_0002.jpg \
-     result.npy
+    --model_def ./work/211839e770f7b538e2d8/VGG_ILSVRC_16_layers_deploy.prototxt \
+    --pretrained_model ./work/211839e770f7b538e2d8/VGG_ILSVRC_16_layers.caffemodel \
+    --mean_file '' \
+    ./data/101_ObjectCategories/airplanes/image_0001.jpg \
+    result.npy
 $ python ./python/show_result.py ./data/ilsvrc12/synset_words.txt result.npy
 ```
