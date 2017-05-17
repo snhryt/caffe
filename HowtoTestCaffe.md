@@ -6,7 +6,7 @@
 ## ネットワーク定義ファイルのダウンロード
 [Model ZOO](https://github.com/BVLC/caffe/wiki/Model-Zoo)で[VGG16(?)](https://gist.github.com/ksimonyan/211839e770f7b538e2d8#file-readme-md)のページを探して、`README.md`のGist IDおよびcaffemodelのURLを確認する。
 ```bash
-$ cd ~/caffe
+$ cd ${CAFFE_HOME}
 $ mkdir work
 $ cd work
 $ ../scripts/download_model_from_gist.sh 211839e770f7b538e2d8 . # README.md の gist_id を入力
@@ -17,14 +17,14 @@ $ wget http://www.robots.ox.ac.uk/~vgg/software/very_deep/caffe/VGG_ILSVRC_16_la
 ## 画像データセットの準備
 物体認識のデータセットの1つである[Caltech101](http://www.vision.caltech.edu/Image_Datasets/Caltech101/)をダウンロード。加えて、シェルスクリプトから関連ファイルもダウンロード。
 ```bash
-$ cd ~/caffe/data
+$ cd ${CAFFE_HOME}/data
 $ wget http://www.vision.caltech.edu/Image_Datasets/Caltech101/101_ObjectCategories.tar.gz
 $ tar xf 101_ObjectCategories.tar.gz
 $ ./ilsvrc12/get_ilsvrc_aux.sh
 ```
 
 ## 分類結果の可視化プログラムの作成
-`~/caffe/python`内に`show_result.py`として以下のプログラムを作成。
+`${CAFFE_HOME}/python`内に`show_result.py`として以下のプログラムを作成。
 ```python
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -41,7 +41,7 @@ for rank, (score, name) in enumerate(prediction[:top_k], start=1):
 
 ## スクリプトの実行
 ```bash
-$ cd ~/caffe
+$ cd ${CAFFE_HOME}
 $ ./python/classify.py \
     --raw_scale 224 \
     --model_def ./work/211839e770f7b538e2d8/VGG_ILSVRC_16_layers_deploy.prototxt \

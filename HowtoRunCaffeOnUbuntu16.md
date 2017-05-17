@@ -1,6 +1,12 @@
 # Ubuntu16.04でCaffeをGPUモードで動かすまで（2017/5/17時点）
 参考→http://yusuke-ujitoko.hatenablog.com/entry/2016/06/19/203443
 
+## ホームディレクトリ名の英語化
+これをやっておかないと色々不便。
+```bash
+$ env LANGUAGE=C LC_MESSAGES=C xdg-user-dirs-gtk-update
+```
+
 ## General Dependencies
 ```bash
 $ sudo apt install libprotobuf-dev \
@@ -44,9 +50,7 @@ $ sudo apt install cmake \
      libtheora-dev \
      libvorbis-dev \
      libxvidcore-dev x264
-$ cd ~
-$ mkdir github
-$ cd github
+$ cd ${OPENCV_DIR} # OpenCVを置くディレクトリ。自分の場合はホームディレクトリ
 $ git clone https://github.com/opencv/opencv.git
 $ git clone https://github.com/opencv/opencv_contrib.git
 $ cd opencv/
@@ -81,65 +85,58 @@ $ sudo reboot # 一旦再起動
 https://developer.nvidia.com/cuda-toolkit
 ```bash
 $ sudo dpkg -i cuda-repo-ubuntu1604-xxxxxxxx.deb
-```
-```bash
 $ sudo apt update
 $ sudo apt install cuda
 ```
 
 ## cuDNNのインストール
 https://developer.nvidia.com/cudnn
-<br>CUDAのバージョンと対応させる
+<br>CUDAのバージョンと対応したcuDNNをダウンロードする。
 ```bash
+$ cd ${CUDNN_DIR} # cuDNNをダウンロードしたディレクトリ。たぶんデフォルトでは ~/Downloads
 $ tar -zxf cudnn-xxxxxxxx.tgz
-$ sudo cp -r cuda/ /usr/local/cudnn-xxxx
-```
-```bash
-$ sudo cp -a cuda/lib64/* /usr/local/lib/
-$ sudo cp -a cuda/include/* /usr/local/include/
-# $ sudo cp lib64/libcudnn* /usr/local/cuda/lib64
-# $ sudo cp include/cudnn.h /usr/local/cuda/include
+$ sudo cp -r ~/cuda/ /usr/local/cudnn-xxx # ~/cuda というディレクトリにコピー。別にホームディレクトリじゃなくてもいい
+$ sudo cp -a ~/cuda/lib64/* /usr/local/lib/
+$ sudo cp -a ~/cuda/include/* /usr/local/include/
 $ sudo ldconfig
 $ sudo reboot
 ```
 
 ## Caffeのインストール
-Caffeのクローニングおよび依存環境のインストール。ここではCaffeはホームディレクトリにクローンしてある。
+Caffeのダウンロードおよび依存環境のインストール。
 ```bash
-$ cd ~
 $ sudo apt install libatlas-base-dev \
      libopenblas-base \
      python-dev \
      libgflags-dev \
      libgoogle-glog-dev \
      liblmdb-dev
-$ cd ~
+$ cd ${CAFFE_HOME} # Caffeをクローンするディレクトリ
 $ git clone https://github.com/BVLC/caffe.git
 $ cd caffe
 $ cp Makefile.config.example Makefile.config
 ```
-Caffeの`make`でエラーが出ないように
+
+パスを通す。
 ```bash
-$ cd /usr/lib/x86_64-linux-gnu/
-$ sudo ln -s libhdf5_serial.so.10.1.0 libhdf5.so
-$ sudo ln -s libhdf5_serial_hl.so.10.0.2 libhdf5_hl.so
-```
-パスを通す
-```bash
-$ cd ~/caffe
-$ export PATH=$PATH:/usr/local/cuda/bin
-$ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-$ export LD_LIBRARY_PATH=/usr/local/cudnn-8.0:$LD_LIBRARY_PATH
+$ cd ${CAFFE_HOME}
+$ export PATH=$PATH:/usr/local/cuda/bin # このまま入力すればいい
+$ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH # このまま入力すればいい
+$ export LD_LIBRARY_PATH=/usr/local/cudnn-xxx:$LD_LIBRARY_PATH # xxx はインストールしたcuDNNのバージョンに合わせて変更
 # $ export LD_LIBRARY_PATH=/usr/lib/openblas-base:$LD_LIBRARY_PATH
 ```
 ## Makefile.configの編集
-- #USE_CUDNN := 1 のアンコメントアウト
-- #OPENCV_VERSION := 3 のアンコメントアウト
-- INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include
-  -> INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial/
+- `#USE_CUDNN := 1` のアンコメントアウト
+- `#OPENCV_VERSION := 3` のアンコメントアウト
+- `INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include`
+  -> `INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial/`
 
 ## Caffeのmakeとtest
 ```bash
+$ cd /usr/lib/x86_64-linux-gnu/
+$ sudo ln -s libhdf5_serial.so.10.1.0 libhdf5.so # make でエラーが出ないように
+$ sudo ln -s libhdf5_serial_hl.so.10.0.2 libhdf5_hl.so # make でエラーが出ないように
+$ cd ${CAFFE_HOME}
 $ make all -j8 # 並列化
 $ make test -j8
 $ make runtest
@@ -147,27 +144,27 @@ $ make runtest
 
 ## Pythonとのラッピング
 ```bash
-$ cd python
+$ cd ${CAFFE_HOME}/python
 $ sudo apt install python-pip
 $ sudo pip install -r requirements.txt
 $ cd ../
 $ make pycaffe -j8
-$ export PYTHONPATH=~/caffe/python/:$PYTHONPATH # Caffeをクローンしたディレクトリに併せて変更
+$ export PYTHONPATH=${CAFFE_HOME}/python/:$PYTHONPATH # ${CAFFE_HOME}はCaffeをクローンしたディレクトリに変更
 ```
 
 ## パスの記録
-次回からもパスが通った状態で起動できるように`~/.profile`に以下を追記
+次回からもパスが通った状態で起動できるように`~/.profile`に以下を追記。
 ```bash
 export PATH=$PATH:/usr/local/cuda/bin
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/usr/local/cudnn-xxxx:$LD_LIBRARY_PATH
-export PYTHONPATH=~/caffe/python/:$PYTHONPATH
+export LD_LIBRARY_PATH=/usr/local/cudnn-xxx:$LD_LIBRARY_PATH
+export PYTHONPATH=${CAFFE_HOME}/python/:$PYTHONPATH # ${CAFFE_HOME}はCaffeをクローンしたディレクトリに変更
 # export LD_LIBRARY_PATH=/usr/lib/openblas-base:$LD_LIBRARY_PATH
 ```
 ## 最後に
-MNISTの学習チュートリアルの実行
+MNISTの学習チュートリアルの実行。
 ```bash
-$ cd ~/caffe
+$ cd ${CAFFE_HOME}
 $ ./data/mnist/get_mnist.sh
 $ ./examples/mnist/create_mnist.sh
 $ ./examples/mnist/train_lenet.sh
