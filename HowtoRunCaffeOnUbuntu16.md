@@ -106,6 +106,7 @@ $ sudo reboot
 ## Caffeのインストール
 Caffeのクローニングおよび依存環境のインストール。ここではCaffeはホームディレクトリにクローンしてある。
 ```bash
+$ cd ~
 $ sudo apt install libatlas-base-dev \
      libopenblas-base \
      python-dev \
