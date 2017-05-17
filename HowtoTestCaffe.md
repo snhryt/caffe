@@ -1,6 +1,6 @@
 # Caffeモデルをダウンロードして利用する（2017/5/18時点）
 参考
-- http://punyo-er-met.hateblo.jp/entry/2016/03/13/214712
+- https://techblog.yahoo.co.jp/programming/caffe-intro/
 - http://punyo-er-met.hateblo.jp/entry/2016/03/13/214712
 
 ## ネットワーク定義ファイルのダウンロード
