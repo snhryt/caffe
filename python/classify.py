@@ -140,11 +140,14 @@ def main(argv):
         inputs = np.load(args.input_file)
     elif os.path.isdir(args.input_file):
         print("Loading folder: %s" % args.input_file)
-        inputs =[caffe.io.load_image(im_f)
-                 for im_f in glob.glob(args.input_file + '/*.' + args.ext)]
+        inputs, filenames = [], []
+        for im_f in glob.glob(args.input_file + '/*.' + args.ext):
+            inputs.append(caffe.io.load_image(im_f))
+            filenames.append(im_f.split('/')[-1])
     else:
         print("Loading image file: %s" % args.input_file)
         inputs = [caffe.io.load_image(args.input_file, not args.force_grayscale)]
+        filenames = [glob.glob(args.input_file + '/*.' + args.ext).split('/')[-1]]
         #print("Loading file: %s" % args.input_file)
         #inputs = [caffe.io.load_image(args.input_file)]
 
@@ -158,6 +161,13 @@ def main(argv):
     # Save
     print("Saving results into %s" % args.output_file)
     np.save(args.output_file, predictions)
+    output_dirpath = str(args.output_file)
+    output_dirpath = output_dirpath[0 : output_dirpath.rfind("/") + 1]
+    output_txtpath = output_dirpath + "TestFilenameList.txt"
+    with open(output_txtpath, 'w') as sub_output_file:
+        for i in range(0, len(filenames)):
+            sub_output_file.write(filenames[i])
+            sub_output_file.write("\n")
 
 
 if __name__ == '__main__':
