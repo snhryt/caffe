@@ -11,24 +11,24 @@ TEST_DIRNAME="NeuropolNovaLt-Regular"
 mkdir -pv $WORK_DIR
 
 if [ ! -d "${WORK_DIR}/train_lmdb" ]; then
-	./build/tools/convert_imageset \
-	    / \
+  ./build/tools/convert_imageset \
+      / \
       "${WORK_DIR}/train.txt" \
-	    "${WORK_DIR}/train_lmdb" \
+      "${WORK_DIR}/train_lmdb" \
       -gray
-	echo ""
+  echo ""
 fi
 if [ ! -d "${WORK_DIR}/val_lmdb" ]; then
-	./build/tools/convert_imageset \
-	    / \
+  ./build/tools/convert_imageset \
+      / \
       "${WORK_DIR}/validation.txt" \
       "${WORK_DIR}/val_lmdb" \
       -gray
-	echo ""
+  echo ""
 fi
 if [ ! -e "${WORK_DIR}/mean.npy" ]; then
   if [ ! -e "${WORK_DIR}/mean.binaryproto" ]; then
-	  ./build/tools/compute_image_mean \
+    ./build/tools/compute_image_mean \
         "${WORK_DIR}/train_lmdb" \
         "${WORK_DIR}/mean.binaryproto"
   fi
@@ -36,13 +36,13 @@ if [ ! -e "${WORK_DIR}/mean.npy" ]; then
       "${WORK_DIR}/mean.binaryproto" \
       "${WORK_DIR}/mean.npy"
   #rm "${WORK_DIR}/mean.binaryproto"
-	echo ""
+  echo ""
 fi
 if [ ! -e "${WORK_DIR}/${NETWORK}_iter_${ITER_NUM}.caffemodel" ]; then
-	./build/tools/caffe train \
+  ./build/tools/caffe train \
       -solver \
       "${WORK_DIR}/${NETWORK}_solver.prototxt"
-	echo ""
+  echo ""
 fi
 
 python ./python/MakeRecogResultsTable.py \
