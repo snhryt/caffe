@@ -81,9 +81,10 @@ def main(argv):
         
   # csvへの書き込み
   output_file = open(args.output_filepath, "w")
-  #os.makedirs(args.output_filepath.rsplit("/", 1)[0])
+  if os.path.exists(args.output_filepath.rsplit("/", 1)[0]) == False:
+    os.makedirs(args.output_filepath.rsplit("/", 1)[0])
   csv_writer = csv.writer(output_file)
-  csv_header = ["full filepath", "filename"]
+  csv_header = ["full filepath"]
   for i in range(0, args.max_num):
 	  csv_header.append("rank " + str(i + 1))
 	  csv_header.append("confidence[%]")
@@ -93,18 +94,19 @@ def main(argv):
     transformed_img = transformer.preprocess("data", input_imgs[i])
     net.blobs["data"].data[...] = transformed_img
     output = net.forward()
-    output_prob = output["prob"][0]
-    top_inds = output_prob.argsort()[::-1][:args.max_num]
+    output_probs = output["prob"][0]
+    top_inds = output_probs.argsort()[::-1][:args.max_num]
 
-    filename = filepaths[i].split("/")[-1]
-    print("<%s>" % filename)
-    csv_line = [filepaths[i], filename]
+    print("<%s>" % filepaths[i])
+    csv_line = [filepaths[i]]
     for j in range(0, len(top_inds)):
-      if output_prob[top_inds[j]] == 0.0:
+      output_prob = output_probs[top_inds[j]] * 100
+      output_prob = round(output_prob, ndigits=1)
+      if output_prob == 0.0:
         break
-      print("#%d | %s | %4.1f%%" % (j+1, labels[top_inds[j]], output_prob[top_inds[j]] * 100))
+      print("#%d | %s | %3.1f%%" % (j+1, labels[top_inds[j]], output_prob))
       csv_line.append(labels[top_inds[j]])
-      csv_line.append("%4.1f" % (output_prob[top_inds[j]] * 100))
+      csv_line.append(output_prob)
     csv_writer.writerow(csv_line)
   output_file.close()
 
