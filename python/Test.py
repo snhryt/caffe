@@ -43,6 +43,8 @@ def main():
   #transformer.set_channel_swap('data', (2, 1, 0))
   #net.blobs['data'].reshape(64, 1, 28, 28)
 
+  labels = np.loadtxt(labels_file, str, delimiter = '\t')
+
   for i in range(1, 10001):
     img_filename = str('{0:05d}'.format(i)) + '.png'
     img_filepath = caffe_root + '/data/mnist/10k_images/' + img_filename
@@ -57,8 +59,6 @@ def main():
     output_prob = output['prob'][0]
     output_prob *= 100
     top_inds = output_prob.argsort()[::-1][:5]
-
-    labels = np.loadtxt(labels_file, str, delimiter = '\t')
 
     if output_prob[top_inds[0]] < 99.0:
       print '<', img_filename, '>'
