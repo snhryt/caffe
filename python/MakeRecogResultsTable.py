@@ -80,11 +80,11 @@ def main(argv):
   labels = np.loadtxt(args.labels_filepath, str, delimiter="\t")
         
   # csvへの書き込み
-  output_file = open(args.output_filepath, "w")
   if os.path.exists(args.output_filepath.rsplit("/", 1)[0]) == False:
     os.makedirs(args.output_filepath.rsplit("/", 1)[0])
+  output_file = open(args.output_filepath, "w")
   csv_writer = csv.writer(output_file)
-  csv_header = ["full filepath"]
+  csv_header = ["full filepath", "filename"]
   for i in range(0, args.max_num):
 	  csv_header.append("rank " + str(i + 1))
 	  csv_header.append("confidence[%]")
@@ -96,9 +96,10 @@ def main(argv):
     output = net.forward()
     output_probs = output["prob"][0]
     top_inds = output_probs.argsort()[::-1][:args.max_num]
-
-    print("<%s>" % filepaths[i])
-    csv_line = [filepaths[i]]
+    
+    filename = filepaths[i].split("/")[-1]
+    print("<%s>" % filename)
+    csv_line = [filepaths[i], filename]
     for j in range(0, len(top_inds)):
       output_prob = output_probs[top_inds[j]] * 100
       output_prob = round(output_prob, ndigits=1)
