@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import sys
+import os
 import argparse
 import csv
 import matplotlib.pyplot as plt
@@ -13,8 +14,8 @@ def main(argv):
   # 絶対いるやつ
   parser.add_argument(
       "input_path",
-      help="テストデータ（入力画像）のファイルパス or " + 
-           "入力画像群が含まれるディレクトリパス"
+      help="テストデータ（入力画像）のファイルパス" + 
+           "or 入力画像群が含まれるディレクトリパス"
   )
   parser.add_argument(
       "model_def_filepath",
@@ -34,86 +35,78 @@ def main(argv):
   )
   # オプション
   parser.add_argument(
-      "mean_img_filepath",
+      "--mean_img_filepath",
       help=".npy 形式の平均画像のファイルパス"
   ) 
-  parset.add_argument(
-      "images_dim",
-      default='100x100',
-      help="画像のサイズ \'<height>x<width>\'"
+  parser.add_argument(
+      "--ext",
+      default="png",
+      help="画像の拡張子（\".\"は不要）"
   )
   parser.add_argument(
-      "ext",
-      help="画像の拡張子（. から始まるやつ）"
-  )
-  parser.add_argument(
-      "max_num",
+      "--max_num",
       default=10,
       help="識別結果で上位何個まで示すか"
   )
   args = parser.parse_args()
 
-  net = caffe.Net(args.model_def_filepath,
+  net = caffe.Net(
+      args.model_def_filepath,
       args.model_weights_filepath,
       caffe.TEST)
   caffe.set_mode_gpu()
 
-  mu = []
+  # transformer 
+  transformer = caffe.io.Transformer({"data": net.blobs["data"].data.shape})
+  transformer.set_transpose("data", (2,0,1))
+  transformer.set_raw_scale("data", 255)
   if args.mean_img_filepath:
     mu = np.load(args.mean_img_filepath)
-
-  transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
-  transformer.set_transpose('data', (2,0,1))
-  transformer.set_raw_scale('data', 255)
-  if len(mu) != 0:
-    transformer.set_mean('data', mu)
+    transformer.set_mean("data", mu)
   
   # 入力データの読みとり
+  input_imgs, filepaths = [], []
   if os.path.isdir(args.input_path):
     print("Loading directory: %s" % args.input_path)
-    inputs, filenames = [], []
-    for im_f in glob.glob(args.input_path + '/*.' + args.ext):
-      inputs.append(caffe.io.load_image(im_f), color=False)
-      filenames.append(im_f.split('/')[-1])
+    for im_f in glob.glob(args.input_path + "/*." + args.ext):
+      input_imgs.append(caffe.io.load_image(im_f, color=False))
+      filepaths.append(im_f)
   else:
     print("Loading image file: %s" % args.input_path)
-    inputs = [caffe.io.load_image(args.input_path), color=False]
-    filenames = [glob.glob(args.input_path + '/*.' + args.ext).split('/')[-1]]
-  print("Classifying %d inputs." % len(inputs))
+    input_imgs = caffe.io.load_image(args.input_path,  color=False)
+    filenpaths = args.input_pat
+  print("Classifying %d input_imgs." % len(input_imgs))
 
-  labels = np.loadtxt(args.labels_filepath, str, delimiter=' ')
-
-  # 認識結果の格納
-  for i in (0, len(inputs)):
-    transformed_img = transformer.preprocess('data', inputs[i])
-    net.blobs['data'].data[...] = transformed_img
-    output = net.forward()
-    output_prob = output['prob'][0]
-    output_prob *= 100
-    
-    top_inds = output_prob.argsort()[::-1][:args.max_num]
-    for j in range(0, len(top_inds)):
-      if output_prob[top_inds[j]] == 0.0:
-        break
-      else:
+  labels = np.loadtxt(args.labels_filepath, str, delimiter="\t")
         
   # csvへの書き込み
-  csv_writer = csv.writer(open(args.output_filepath, 'w'))
+  output_file = open(args.output_filepath, "w")
+  #os.makedirs(args.output_filepath.rsplit("/", 1)[0])
+  csv_writer = csv.writer(output_file)
   csv_header = ["full filepath", "filename"]
   for i in range(0, args.max_num):
-	  csv_header.append("rank" + str(i + 1))
+	  csv_header.append("rank " + str(i + 1))
 	  csv_header.append("confidence[%]")
   csv_writer.writerow(csv_header)
 
-  for i in range(0, len(inputs)):
-    csv_line = []
-    for j in range(0, args.max_num):
-      if output_prob[top_inds[i]] == 0.0:
+  for i in range(0, len(input_imgs)):
+    transformed_img = transformer.preprocess("data", input_imgs[i])
+    net.blobs["data"].data[...] = transformed_img
+    output = net.forward()
+    output_prob = output["prob"][0]
+    top_inds = output_prob.argsort()[::-1][:args.max_num]
+
+    filename = filepaths[i].split("/")[-1]
+    print("<%s>" % filename)
+    csv_line = [filepaths[i], filename]
+    for j in range(0, len(top_inds)):
+      if output_prob[top_inds[j]] == 0.0:
         break
-      else:
-        print labels[top_inds[i]], '(', output_prob[top_inds[i]], '%)'
+      print("#%d | %s | %4.1f%%" % (j+1, labels[top_inds[j]], output_prob[top_inds[j]] * 100))
+      csv_line.append(labels[top_inds[j]])
+      csv_line.append("%4.1f" % (output_prob[top_inds[j]] * 100))
+    csv_writer.writerow(csv_line)
+  output_file.close()
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
   main(sys.argv)
