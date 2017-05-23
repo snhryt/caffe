@@ -74,14 +74,15 @@ def main(argv):
   else:
     print("Loading image file: %s" % args.input_path)
     input_imgs = caffe.io.load_image(args.input_path,  color=False)
-    filenpaths = args.input_pat
+    filepaths = args.input_pat
   print("Classifying %d input_imgs." % len(input_imgs))
 
   labels = np.loadtxt(args.labels_filepath, str, delimiter="\t")
         
   # csvへの書き込み
-  if os.path.exists(args.output_filepath.rsplit("/", 1)[0]) == False:
-    os.makedirs(args.output_filepath.rsplit("/", 1)[0])
+  output_dirpath = args.output_filepath.rsplit("/", 1)[0]
+  if os.path.exists(output_dirpath) == False:
+    os.makedirs(output_dirpath)
   output_file = open(args.output_filepath, "w")
   csv_writer = csv.writer(output_file)
   csv_header = ["full filepath", "filename"]
