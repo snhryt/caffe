@@ -2,11 +2,11 @@
 set -e
 
 HDD_DIR="/media/snhryt/Data/Research_Master"
-SITUATION="10fonts_20class"
+SITUATION="100fonts_200class"
 WORK_DIR="./MyWork/${SITUATION}"
 NETWORK="caffenet"
-ITER_NUM="50000"
-TEST_DIRNAME="NeuropolNovaLt-Regular"
+ITER_NUM="30000"
+TEST_DIRNAME="11S01-Black-Tuesday-Offset"
 
 mkdir -pv $WORK_DIR
 
@@ -35,7 +35,6 @@ if [ ! -e "${WORK_DIR}/mean.npy" ]; then
   python ./python/ConvertBinaryprotoToNpy.py \
       "${WORK_DIR}/mean.binaryproto" \
       "${WORK_DIR}/mean.npy"
-  #rm "${WORK_DIR}/mean.binaryproto"
   echo ""
 fi
 if [ ! -e "${WORK_DIR}/${NETWORK}_iter_${ITER_NUM}.caffemodel" ]; then
@@ -49,7 +48,7 @@ python ./python/MakeRecogResultsTable.py \
     "${HDD_DIR}/Syn_AlphabetImages/font/${TEST_DIRNAME}" \
     "${WORK_DIR}/${NETWORK}_deploy.prototxt" \
     "${WORK_DIR}/${NETWORK}_iter_${ITER_NUM}.caffemodel" \
-    "${HDD_DIR}/Syn_AlphabetImages/selected/100fonts_Clustering/SelectedFonts_20class.txt" \
+    "${HDD_DIR}/Syn_AlphabetImages/selected/100fonts_Clustering/SelectedFonts_200class.txt" \
     "${HDD_DIR}/RecogResults/Clustering/${SITUATION}/${TEST_DIRNAME}.csv" \
     --mean_img_filepath="${WORK_DIR}/mean.npy" 
 
