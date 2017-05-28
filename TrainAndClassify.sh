@@ -2,11 +2,15 @@
 set -e
 
 HDD_DIR="/media/snhryt/Data/Research_Master"
-SITUATION="100fonts_200class"
+FONT_NUM=100
+#CLASS_NUM=${FONT_NUM}
+CLASS_NUM=`expr ${FONT_NUM} \* 2`
+SITUATION="${FONT_NUM}fonts_${CLASS_NUM}class"
 WORK_DIR="./MyWork/${SITUATION}"
 NETWORK="caffenet"
 ITER_NUM="30000"
-TEST_DIRNAME="11S01-Black-Tuesday-Offset"
+SITUATION2="${FONT_NUM}fonts_Clustering"
+TEST_DIRNAME="00-Starmap-Truetype"
 
 mkdir -pv $WORK_DIR
 
@@ -48,8 +52,9 @@ python ./python/MakeRecogResultsTable.py \
     "${HDD_DIR}/Syn_AlphabetImages/font/${TEST_DIRNAME}" \
     "${WORK_DIR}/${NETWORK}_deploy.prototxt" \
     "${WORK_DIR}/${NETWORK}_iter_${ITER_NUM}.caffemodel" \
-    "${HDD_DIR}/Syn_AlphabetImages/selected/100fonts_Clustering/SelectedFonts_200class.txt" \
+    "${HDD_DIR}/Syn_AlphabetImages/selected/${SITUATION2}/SelectedFonts_${CLASS_NUM}class.txt" \
     "${HDD_DIR}/RecogResults/Clustering/${SITUATION}/${TEST_DIRNAME}.csv" \
-    --mean_img_filepath="${WORK_DIR}/mean.npy" 
+    --mean_img_filepath="${WORK_DIR}/mean.npy" \
+    --ext="png"
 
 echo "\n=== ALL DONE! =============================="
