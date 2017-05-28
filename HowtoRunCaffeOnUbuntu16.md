@@ -169,3 +169,8 @@ $ ./data/mnist/get_mnist.sh
 $ ./examples/mnist/create_mnist.sh
 $ ./examples/mnist/train_lenet.sh
 ```
+ちゃんとGPUを使って学習できているか確認したいときは、
+```bash
+$ nvidia-smi -l
+```
+でリアルタイムにGPU使用率の表示が可能。
